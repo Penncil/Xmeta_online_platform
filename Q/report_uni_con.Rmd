@@ -1,0 +1,84 @@
+---
+title: "X-META Dynamic Report"
+header-includes:
+- \usepackage{titling}
+- \usepackage{fancyhdr}
+- \pagestyle{fancy}
+- \fancyhead[RE,RO]{\includegraphics[width=7cm]{/srv/shiny-server/0408/CCEB.png}}
+- \fancypagestyle{plain}{\pagestyle{fancy}}
+output: pdf_document 
+params:
+  n: NA
+---
+
+# 1 Introduction
+## 1.1 What is X-meta?
+### X-meta is an open-sourced, well-documented and interactive toolbox for meta-analysis.There are three main components to this toolbox: An R package called "xmeta", video tutorials and documentation for the package and an online analysis platform. 
+### Xmeta package offers several functions for performing meta-analysis and visualizing outcomes, allowing users to conduct robust multivariate meta-analysis (mmeta), publication bias test (PB), outcome reporting bias test (ORB) and novel visualization tool (galaxy). Through the tutorials, reference documents and sample code, users can have a comprehensive exploration of the features found in XMETA and how they may apply to analytical work. The online meta-analysis system works with different available methods and a variety of formats of data, enabling users to quickly obtain the meta-analysis results without writing any code. 
+### Please check https://www.xmeta.wiki/ to explore more features. 
+
+## 1.2 About the method and dataset
+### According to the uploaded dataset, this is a report for _Univariate Meta-analysis_ with _Continuous Outcomes_. 
+
+## 1.3 In this meta-analysis report, you can get:
+### 1. Your uploaded data <br />
+### 2. Summary <br />
+### 3. Forest Plot <br />
+### 4. Sensitivity Analysis (Fixed & Random Effect Model) <br />
+### 5. Funnel plot for Publication bias test <br />
+\newpage
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(tinytex.verbose = TRUE)
+library(metasens)
+```
+
+# 2 Dataset & Analysis
+## 2.1 Here is the dataset you uploaded:
+There are overall `r dim(params$n)[1]` studies in the dataset. 
+\vspace{0.5cm}
+```{r,echo=FALSE}
+params$n
+```
+\vspace{1cm}
+
+
+
+## 2.2 Summary:
+\vspace{0.5cm}
+```{r,echo=FALSE}
+mc1 <- metacont(Ne, Me, Se, Nc, Mc, Sc,data = params$n,studlab = paste(author, year))
+mc1
+```
+\vspace{1cm}
+
+## 2.3 Forest plot:
+\vspace{0.5cm}
+```{r,echo=FALSE,fig.pos= "hbtp",fig.height=8,fig.width=14}
+forest(mc1, xlab ="Difference in mean response (intervention - control)
+                units: maximum % fall in FEV1",
+                xlim = c(-50, 10), xlab.pos = -20, smlab.pos = -20)
+```
+
+## 2.4 Heterogeneity test statistics (you can also get these results from Summary):
+The value of ${tau}^2$ is `r (mc1$tau)^2`; the value of $I^2$ is `r round((mc1$I2)*100,digit =2)`$\%$.
+
+## 2.5 Sensitivity test:
+\vspace{0.5cm}
+```{r,echo=FALSE,fig.pos= "hbtp",fig.height=8,fig.width=14}
+fix <- metacum(mc1, pooled = 'fixed')
+forest(fix)
+random <- metacum(mc1, pooled = 'random')
+forest(random)
+```
+
+
+## 2.6 Publication bias test:
+```{r,echo=FALSE,fig.height=10,fig.width=14,results='hide',warning=FALSE}
+funnel <- funnel(mc1,level=0.95,contour=c(0.9, 0.95, 0.99), shade=c("darkgray", "gray", "lightgray"))
+legend(-30, 1.25,c("0.1 > p > 0.05","0.05 > p > 0.01", "< 0.01"),fill=c("darkgray", "gray", "lightgray"),bty="n")
+```
+
+
