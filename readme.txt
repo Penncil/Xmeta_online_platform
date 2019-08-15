@@ -1,2 +1,1 @@
-shiny: 123456
-ubuntu:penncil
+A repo for xmeta online platform beta version. 
